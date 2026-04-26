@@ -102,3 +102,26 @@ it('returns 403 when updating a player not belonging to the user\'s team', funct
         ])
         ->assertForbidden();
 });
+
+it('sets the application locale from the x app locale header for player requests', function () {
+    $player = $this->user->team->players->first();
+    $player->update([
+        'first_name' => [
+            'en' => 'Giorgi',
+            'ka' => 'გიორგი',
+        ],
+        'last_name' => [
+            'en' => 'Kvara',
+            'ka' => 'კვარა',
+        ],
+    ]);
+
+    $this->withHeader('Authorization', $this->token)
+        ->withHeader('X-App-Locale', 'ka')
+        ->getJson("/api/v1/players/{$player->id}")
+        ->assertOk()
+        ->assertHeader('Content-Language', 'ka')
+        ->assertJsonPath('data.first_name.ka', 'გიორგი')
+        ->assertJsonPath('data.last_name.ka', 'კვარა')
+        ->assertJsonPath('data.position.name.ka', 'მეკარე');
+});

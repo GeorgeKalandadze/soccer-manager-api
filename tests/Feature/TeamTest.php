@@ -86,3 +86,20 @@ it('updates the authenticated user\'s team name and country', function () {
         'country_id' => $countryId,
     ]);
 });
+
+it('sets the application locale from the x app locale header for team requests', function () {
+    $this->user->team->update([
+        'name' => [
+            'en' => 'Tbilisi United',
+            'ka' => 'თბილისი იუნაიტედი',
+        ],
+    ]);
+
+    $this->withHeader('Authorization', $this->token)
+        ->withHeader('X-App-Locale', 'ka')
+        ->getJson('/api/v1/team')
+        ->assertOk()
+        ->assertHeader('Content-Language', 'ka')
+        ->assertJsonPath('data.name.ka', 'თბილისი იუნაიტედი')
+        ->assertJsonPath('data.players.0.position.name.ka', 'მეკარე');
+});
