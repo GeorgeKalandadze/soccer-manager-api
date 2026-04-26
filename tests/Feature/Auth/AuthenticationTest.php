@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Country;
 use App\Models\User;
 use Database\Seeders\CountrySeeder;
 use Database\Seeders\PositionSeeder;
@@ -7,7 +8,7 @@ use Illuminate\Support\Facades\Hash;
 
 it('registers a user and returns a success message with a sanctum bearer token header', function () {
     $this->seed([CountrySeeder::class, PositionSeeder::class]);
-    $countryId = \App\Models\Country::inRandomOrder()->value('id');
+    $countryId = Country::inRandomOrder()->value('id');
 
     $response = $this->postJson('/api/register', [
         'name' => 'George',
@@ -37,7 +38,7 @@ it('registers a user and returns a success message with a sanctum bearer token h
 
 it('creates a team with 20 players on registration', function () {
     $this->seed([CountrySeeder::class, PositionSeeder::class]);
-    $countryId = \App\Models\Country::inRandomOrder()->value('id');
+    $countryId = Country::inRandomOrder()->value('id');
 
     $this->postJson('/api/register', [
         'name' => 'George',

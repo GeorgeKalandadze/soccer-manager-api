@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\Country;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\TeamService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;

@@ -2,12 +2,12 @@
 
 namespace App\Services;
 
-use App\Repositories\Contracts\PlayerRepositoryInterface;
-use App\Repositories\Contracts\TeamRepositoryInterface;
 use App\Models\Country;
 use App\Models\Position;
 use App\Models\Team;
 use App\Models\User;
+use App\Repositories\Contracts\PlayerRepositoryInterface;
+use App\Repositories\Contracts\TeamRepositoryInterface;
 use Faker\Factory as Faker;
 use Illuminate\Support\Facades\DB;
 
@@ -22,7 +22,7 @@ class TeamService
     {
         return DB::transaction(function () use ($user, $country) {
             $team = $this->teamRepository->create([
-                'name' => ['en' => $user->name . ' FC', 'ka' => $user->name . ' FC'],
+                'name' => ['en' => $user->name.' FC', 'ka' => $user->name.' FC'],
                 'budget' => 5_000_000,
                 'user_id' => $user->id,
                 'country_id' => $country->id,
