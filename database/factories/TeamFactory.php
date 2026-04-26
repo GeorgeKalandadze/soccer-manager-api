@@ -10,7 +10,7 @@ class TeamFactory extends Factory
 {
     public function definition(): array
     {
-        $name = fake()->city() . ' FC';
+        $name = fake()->city().' FC';
 
         return [
             'name' => ['en' => $name, 'ka' => $name],

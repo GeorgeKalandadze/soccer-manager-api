@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Country;
 use App\Models\User;
 use Database\Seeders\CountrySeeder;
 use Database\Seeders\PositionSeeder;
@@ -7,7 +8,7 @@ use Illuminate\Support\Facades\Hash;
 
 it('registers a user and returns a success message with a sanctum bearer token header', function () {
     $this->seed([CountrySeeder::class, PositionSeeder::class]);
-    $countryId = \App\Models\Country::inRandomOrder()->value('id');
+    $countryId = Country::inRandomOrder()->value('id');
 
     $response = $this->postJson('/api/register', [
         'name' => 'George',
@@ -19,10 +20,12 @@ it('registers a user and returns a success message with a sanctum bearer token h
 
     $response
         ->assertOk()
-        ->assertJsonPath('message', 'User registered successfully.');
+        ->assertJsonPath('message', 'User registered successfully.')
+        ->assertJsonStructure(['message', 'token']);
     $response->assertHeader('Authorization');
 
     expect($response->headers->get('Authorization'))->toStartWith('Bearer ');
+    expect($response->json('token'))->toBe(substr($response->headers->get('Authorization'), 7));
     $this->assertDatabaseHas('users', [
         'name' => 'George',
         'email' => 'george@example.com',
@@ -37,7 +40,7 @@ it('registers a user and returns a success message with a sanctum bearer token h
 
 it('creates a team with 20 players on registration', function () {
     $this->seed([CountrySeeder::class, PositionSeeder::class]);
-    $countryId = \App\Models\Country::inRandomOrder()->value('id');
+    $countryId = Country::inRandomOrder()->value('id');
 
     $this->postJson('/api/register', [
         'name' => 'George',
@@ -96,8 +99,10 @@ it('logs in a user and returns a success message with a sanctum bearer token hea
 
     $response
         ->assertOk()
-        ->assertJsonPath('message', 'User logged in successfully.');
+        ->assertJsonPath('message', 'User logged in successfully.')
+        ->assertJsonStructure(['message', 'token']);
     $response->assertHeader('Authorization');
+    expect($response->json('token'))->toBe(substr($response->headers->get('Authorization'), 7));
 
     $this
         ->withHeader('Authorization', $response->headers->get('Authorization'))

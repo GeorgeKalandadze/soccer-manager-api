@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\Country;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\TeamService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
@@ -32,9 +32,11 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
 
         Auth::login($user);
+        $token = $user->refreshToken();
 
         return response()->json([
             'message' => 'User registered successfully.',
-        ]);
+            'token' => $token,
+        ])->header('Authorization', 'Bearer '.$token);
     }
 }

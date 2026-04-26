@@ -15,7 +15,7 @@ class AfterMiddleware
     {
         $response = $next($request);
 
-        if (auth()->check() && $request->route()?->getName() !== 'logout') {
+        if (auth()->check() && $request->route()?->getName() !== 'logout' && ! $response->headers->has('Authorization')) {
             $response->headers->set('Authorization', 'Bearer '.auth()->user()->refreshToken());
         }
 

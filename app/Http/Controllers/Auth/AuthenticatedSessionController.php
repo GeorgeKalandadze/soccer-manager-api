@@ -21,9 +21,12 @@ class AuthenticatedSessionController extends Controller
             $request->session()->regenerate();
         }
 
+        $token = $request->user()->refreshToken();
+
         return response()->json([
             'message' => 'User logged in successfully.',
-        ]);
+            'token' => $token,
+        ])->header('Authorization', 'Bearer '.$token);
     }
 
     /**
