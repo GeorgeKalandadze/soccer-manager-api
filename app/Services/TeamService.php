@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Repositories\Contracts\PlayerRepositoryInterface;
+use App\Repositories\Contracts\TeamRepositoryInterface;
 use App\Models\Country;
 use App\Models\Position;
 use App\Models\Team;
@@ -11,10 +13,15 @@ use Illuminate\Support\Facades\DB;
 
 class TeamService
 {
+    public function __construct(
+        private readonly TeamRepositoryInterface $teamRepository,
+        private readonly PlayerRepositoryInterface $playerRepository,
+    ) {}
+
     public function createWithPlayers(User $user, Country $country): Team
     {
         return DB::transaction(function () use ($user, $country) {
-            $team = Team::create([
+            $team = $this->teamRepository->create([
                 'name' => ['en' => $user->name . ' FC', 'ka' => $user->name . ' FC'],
                 'budget' => 5_000_000,
                 'user_id' => $user->id,
@@ -65,6 +72,6 @@ class TeamService
             }
         }
 
-        DB::table('players')->insert($players);
+        $this->playerRepository->bulkInsert($players);
     }
 }

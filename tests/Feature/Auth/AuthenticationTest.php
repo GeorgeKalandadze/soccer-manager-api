@@ -1,14 +1,20 @@
 <?php
 
 use App\Models\User;
+use Database\Seeders\CountrySeeder;
+use Database\Seeders\PositionSeeder;
 use Illuminate\Support\Facades\Hash;
 
 it('registers a user and returns a success message with a sanctum bearer token header', function () {
+    $this->seed([CountrySeeder::class, PositionSeeder::class]);
+    $countryId = \App\Models\Country::inRandomOrder()->value('id');
+
     $response = $this->postJson('/api/register', [
         'name' => 'George',
         'email' => 'george@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
+        'country_id' => $countryId,
     ]);
 
     $response
@@ -27,6 +33,54 @@ it('registers a user and returns a success message with a sanctum bearer token h
         ->getJson('/api/user')
         ->assertOk()
         ->assertJsonPath('email', 'george@example.com');
+});
+
+it('creates a team with 20 players on registration', function () {
+    $this->seed([CountrySeeder::class, PositionSeeder::class]);
+    $countryId = \App\Models\Country::inRandomOrder()->value('id');
+
+    $this->postJson('/api/register', [
+        'name' => 'George',
+        'email' => 'george@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+        'country_id' => $countryId,
+    ])->assertOk();
+
+    $user = User::where('email', 'george@example.com')->first();
+    $team = $user->team;
+
+    expect($team)->not->toBeNull()
+        ->and($team->budget)->toBe(5_000_000)
+        ->and($team->players)->toHaveCount(20);
+
+    $positionCounts = $team->players->groupBy(fn ($p) => $p->position->abbreviation)
+        ->map->count();
+
+    expect($positionCounts->toArray())->toBe([
+        'GK' => 3,
+        'DF' => 6,
+        'MF' => 6,
+        'AT' => 5,
+    ]);
+
+    $team->players->each(function ($player) {
+        expect($player->market_value)->toBe(1_000_000)
+            ->and($player->age)->toBeGreaterThanOrEqual(18)
+            ->and($player->age)->toBeLessThanOrEqual(40);
+    });
+});
+
+it('requires country_id for registration', function () {
+    $this->seed([CountrySeeder::class, PositionSeeder::class]);
+
+    $this->postJson('/api/register', [
+        'name' => 'George',
+        'email' => 'george@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ])->assertUnprocessable()
+        ->assertJsonValidationErrors('country_id');
 });
 
 it('logs in a user and returns a success message with a sanctum bearer token header', function () {
