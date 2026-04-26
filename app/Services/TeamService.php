@@ -30,4 +30,9 @@ class TeamService
             return $team;
         });
     }
+
+    public function update(Team $team, array $data): Team
+    {
+        return $this->teamRepository->update($team, $data);
+    }
 }

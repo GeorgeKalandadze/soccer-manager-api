@@ -53,3 +53,52 @@ it('returns 403 for a player not belonging to the user\'s team', function () {
         ->getJson("/api/v1/players/{$otherPlayer->id}")
         ->assertForbidden();
 });
+
+it('updates a player belonging to the user\'s team', function () {
+    $player = $this->user->team->players->first();
+    $countryId = Country::where('id', '!=', $player->country_id)->value('id');
+
+    $this->withHeader('Authorization', $this->token)
+        ->patchJson("/api/v1/players/{$player->id}", [
+            'first_name' => [
+                'en' => 'Giorgi',
+                'ka' => 'Giorgi',
+            ],
+            'last_name' => [
+                'en' => 'Kvara',
+                'ka' => 'Kvara',
+            ],
+            'country_id' => $countryId,
+        ])
+        ->assertOk()
+        ->assertJsonPath('data.first_name.en', 'Giorgi')
+        ->assertJsonPath('data.first_name.ka', 'Giorgi')
+        ->assertJsonPath('data.last_name.en', 'Kvara')
+        ->assertJsonPath('data.last_name.ka', 'Kvara')
+        ->assertJsonPath('data.country.id', $countryId);
+
+    $this->assertDatabaseHas('players', [
+        'id' => $player->id,
+        'country_id' => $countryId,
+    ]);
+});
+
+it('returns 403 when updating a player not belonging to the user\'s team', function () {
+    $otherUser = User::factory()->create();
+    $otherTeam = Team::factory()->create(['user_id' => $otherUser->id]);
+    $otherPlayer = Player::factory()->create(['team_id' => $otherTeam->id]);
+
+    $this->withHeader('Authorization', $this->token)
+        ->patchJson("/api/v1/players/{$otherPlayer->id}", [
+            'first_name' => [
+                'en' => 'Giorgi',
+                'ka' => 'Giorgi',
+            ],
+            'last_name' => [
+                'en' => 'Kvara',
+                'ka' => 'Kvara',
+            ],
+            'country_id' => Country::query()->value('id'),
+        ])
+        ->assertForbidden();
+});

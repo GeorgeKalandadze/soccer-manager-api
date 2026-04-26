@@ -20,10 +20,12 @@ it('registers a user and returns a success message with a sanctum bearer token h
 
     $response
         ->assertOk()
-        ->assertJsonPath('message', 'User registered successfully.');
+        ->assertJsonPath('message', 'User registered successfully.')
+        ->assertJsonStructure(['message', 'token']);
     $response->assertHeader('Authorization');
 
     expect($response->headers->get('Authorization'))->toStartWith('Bearer ');
+    expect($response->json('token'))->toBe(substr($response->headers->get('Authorization'), 7));
     $this->assertDatabaseHas('users', [
         'name' => 'George',
         'email' => 'george@example.com',
@@ -97,8 +99,10 @@ it('logs in a user and returns a success message with a sanctum bearer token hea
 
     $response
         ->assertOk()
-        ->assertJsonPath('message', 'User logged in successfully.');
+        ->assertJsonPath('message', 'User logged in successfully.')
+        ->assertJsonStructure(['message', 'token']);
     $response->assertHeader('Authorization');
+    expect($response->json('token'))->toBe(substr($response->headers->get('Authorization'), 7));
 
     $this
         ->withHeader('Authorization', $response->headers->get('Authorization'))

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Country;
+use App\Models\Player;
 use App\Models\Position;
 use App\Models\Team;
 use App\Repositories\Contracts\PlayerRepositoryInterface;
@@ -50,5 +51,10 @@ class PlayerService
         }
 
         $this->playerRepository->bulkInsert($players);
+    }
+
+    public function update(Player $player, array $data): Player
+    {
+        return $this->playerRepository->update($player, $data);
     }
 }

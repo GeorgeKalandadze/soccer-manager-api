@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Country;
+use App\Models\User;
 use Database\Seeders\CountrySeeder;
 use Database\Seeders\PositionSeeder;
 
@@ -18,6 +19,7 @@ beforeEach(function () {
     ]);
 
     $this->token = $response->headers->get('Authorization');
+    $this->user = User::where('email', 'george@example.com')->first();
 });
 
 it('returns the authenticated user\'s team', function () {
@@ -61,4 +63,26 @@ it('returns correct total value as sum of player market values', function () {
 
     expect($response->json('data.total_value'))->toBe(20_000_000)
         ->and($response->json('data.budget'))->toBe(5_000_000);
+});
+
+it('updates the authenticated user\'s team name and country', function () {
+    $countryId = Country::where('id', '!=', $this->user->team->country_id)->value('id');
+
+    $this->withHeader('Authorization', $this->token)
+        ->patchJson('/api/v1/team', [
+            'name' => [
+                'en' => 'Tbilisi United',
+                'ka' => 'Tbilisi United',
+            ],
+            'country_id' => $countryId,
+        ])
+        ->assertOk()
+        ->assertJsonPath('data.name.en', 'Tbilisi United')
+        ->assertJsonPath('data.name.ka', 'Tbilisi United')
+        ->assertJsonPath('data.country.id', $countryId);
+
+    $this->assertDatabaseHas('teams', [
+        'id' => $this->user->team->id,
+        'country_id' => $countryId,
+    ]);
 });

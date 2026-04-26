@@ -32,9 +32,11 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
 
         Auth::login($user);
+        $token = $user->refreshToken();
 
         return response()->json([
             'message' => 'User registered successfully.',
-        ]);
+            'token' => $token,
+        ])->header('Authorization', 'Bearer '.$token);
     }
 }
