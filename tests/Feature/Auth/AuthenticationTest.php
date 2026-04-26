@@ -86,6 +86,21 @@ it('requires country_id for registration', function () {
         ->assertJsonValidationErrors('country_id');
 });
 
+it('returns Georgian validation messages when requested', function () {
+    $this->seed([CountrySeeder::class, PositionSeeder::class]);
+
+    $this->withHeader('X-App-Locale', 'ka')
+        ->postJson('/api/register', [
+            'name' => 'George',
+            'email' => 'george@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ])
+        ->assertUnprocessable()
+        ->assertHeader('Content-Language', 'ka')
+        ->assertJsonPath('errors.country_id.0', 'ქვეყანა სავალდებულოა.');
+});
+
 it('logs in a user and returns a success message with a sanctum bearer token header', function () {
     User::factory()->create([
         'email' => 'george@example.com',
