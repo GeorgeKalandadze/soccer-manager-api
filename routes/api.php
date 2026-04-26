@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\PlayerController;
 use App\Http\Controllers\Api\V1\TeamController;
+use App\Http\Controllers\Api\V1\TransferListingController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,4 +15,9 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::patch('/team', [TeamController::class, 'update'])->name('team.update');
     Route::get('/players/{player}', [PlayerController::class, 'show'])->name('players.show');
     Route::patch('/players/{player}', [PlayerController::class, 'update'])->name('players.update');
+
+    Route::get('/transfer-listings', [TransferListingController::class, 'index'])->name('transfer-listings.index');
+    Route::post('/transfer-listings', [TransferListingController::class, 'store'])->name('transfer-listings.store');
+    Route::delete('/transfer-listings/{listing}', [TransferListingController::class, 'destroy'])->name('transfer-listings.destroy');
+    Route::post('/transfer-listings/{listing}/purchase', [TransferListingController::class, 'purchase'])->name('transfer-listings.purchase');
 });
