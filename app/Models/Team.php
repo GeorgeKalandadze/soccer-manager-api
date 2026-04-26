@@ -5,17 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
-    'first_name',
-    'last_name',
-    'age',
-    'market_value',
-    'team_id',
-    'position_id',
+    'name',
+    'budget',
+    'user_id',
     'country_id',
 ])]
-class Player extends Model
+class Team extends Model
 {
     /**
      * Get the attributes that should be cast.
@@ -25,16 +23,14 @@ class Player extends Model
     protected function casts(): array
     {
         return [
-            'first_name' => 'array',
-            'last_name' => 'array',
-            'age' => 'integer',
-            'market_value' => 'integer',
+            'name' => 'array',
+            'budget' => 'integer',
         ];
     }
 
-    public function position(): BelongsTo
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(Position::class);
+        return $this->belongsTo(User::class);
     }
 
     public function country(): BelongsTo
@@ -42,8 +38,8 @@ class Player extends Model
         return $this->belongsTo(Country::class);
     }
 
-    public function team(): BelongsTo
+    public function players(): HasMany
     {
-        return $this->belongsTo(Team::class);
+        return $this->hasMany(Player::class);
     }
 }
