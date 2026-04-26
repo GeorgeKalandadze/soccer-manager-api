@@ -3,7 +3,7 @@
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
-it('registers a user and returns a sanctum bearer token header', function () {
+it('registers a user and returns a success message with a sanctum bearer token header', function () {
     $response = $this->postJson('/api/register', [
         'name' => 'George',
         'email' => 'george@example.com',
@@ -11,7 +11,9 @@ it('registers a user and returns a sanctum bearer token header', function () {
         'password_confirmation' => 'password',
     ]);
 
-    $response->assertNoContent();
+    $response
+        ->assertOk()
+        ->assertJsonPath('message', 'User registered successfully.');
     $response->assertHeader('Authorization');
 
     expect($response->headers->get('Authorization'))->toStartWith('Bearer ');
@@ -27,7 +29,7 @@ it('registers a user and returns a sanctum bearer token header', function () {
         ->assertJsonPath('email', 'george@example.com');
 });
 
-it('logs in a user and returns a sanctum bearer token header', function () {
+it('logs in a user and returns a success message with a sanctum bearer token header', function () {
     User::factory()->create([
         'email' => 'george@example.com',
         'password' => Hash::make('password'),
@@ -38,7 +40,9 @@ it('logs in a user and returns a sanctum bearer token header', function () {
         'password' => 'password',
     ]);
 
-    $response->assertNoContent();
+    $response
+        ->assertOk()
+        ->assertJsonPath('message', 'User logged in successfully.');
     $response->assertHeader('Authorization');
 
     $this
@@ -68,7 +72,8 @@ it('logs out the current sanctum token', function () {
     $this
         ->withHeader('Authorization', 'Bearer '.$token)
         ->postJson('/api/logout')
-        ->assertNoContent()
+        ->assertOk()
+        ->assertJsonPath('message', 'User logged out successfully.')
         ->assertHeaderMissing('Authorization');
 
     $this
