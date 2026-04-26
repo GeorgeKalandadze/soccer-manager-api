@@ -11,13 +11,21 @@ require __DIR__.'/auth.php';
 Route::middleware(['auth:sanctum'])->get('/user', fn (Request $request) => $request->user()->fresh())->name('user');
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
-    Route::get('/team', [TeamController::class, 'show'])->name('team.show');
-    Route::patch('/team', [TeamController::class, 'update'])->name('team.update');
-    Route::get('/players/{player}', [PlayerController::class, 'show'])->name('players.show');
-    Route::patch('/players/{player}', [PlayerController::class, 'update'])->name('players.update');
+    Route::prefix('team')->group(function () {
+        Route::get('/', [TeamController::class, 'show'])->name('team.show');
+        Route::patch('/', [TeamController::class, 'update'])->name('team.update');
+    });
 
-    Route::get('/transfer-listings', [TransferListingController::class, 'index'])->name('transfer-listings.index');
-    Route::post('/transfer-listings', [TransferListingController::class, 'store'])->name('transfer-listings.store');
-    Route::delete('/transfer-listings/{listing}', [TransferListingController::class, 'destroy'])->name('transfer-listings.destroy');
-    Route::post('/transfer-listings/{listing}/purchase', [TransferListingController::class, 'purchase'])->name('transfer-listings.purchase');
+    Route::prefix('players')->group(function () {
+        Route::get('/{player}', [PlayerController::class, 'show'])->name('players.show');
+        Route::patch('/{player}', [PlayerController::class, 'update'])->name('players.update');
+    });
+
+    Route::prefix('transfer-listings')->group(function () {
+        Route::get('/', [TransferListingController::class, 'index'])->name('transfer-listings.index');
+        Route::post('/', [TransferListingController::class, 'store'])->name('transfer-listings.store');
+        Route::delete('/{listing}', [TransferListingController::class, 'destroy'])->name('transfer-listings.destroy');
+        Route::post('/{listing}/purchase', [TransferListingController::class, 'purchase'])->name('transfer-listings.purchase');
+    });
 });
+
