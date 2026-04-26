@@ -4,9 +4,11 @@ namespace App\Providers;
 
 use App\Repositories\Contracts\PlayerRepositoryInterface;
 use App\Repositories\Contracts\TeamRepositoryInterface;
+use App\Repositories\Contracts\TransferListingRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\PlayerRepository;
 use App\Repositories\TeamRepository;
+use App\Repositories\TransferListingRepository;
 use App\Repositories\UserRepository;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\ServiceProvider;
@@ -18,6 +20,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
         $this->app->bind(TeamRepositoryInterface::class, TeamRepository::class);
         $this->app->bind(PlayerRepositoryInterface::class, PlayerRepository::class);
+        $this->app->bind(TransferListingRepositoryInterface::class, TransferListingRepository::class);
     }
 
     public function boot(): void
