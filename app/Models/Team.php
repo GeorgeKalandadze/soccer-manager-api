@@ -42,4 +42,19 @@ class Team extends Model
     {
         return $this->hasMany(Player::class);
     }
+
+    public function transferListings(): HasMany
+    {
+        return $this->hasMany(TransferListing::class, 'seller_team_id');
+    }
+
+    public function soldTransfers(): HasMany
+    {
+        return $this->hasMany(Transfer::class, 'seller_team_id');
+    }
+
+    public function boughtTransfers(): HasMany
+    {
+        return $this->hasMany(Transfer::class, 'buyer_team_id');
+    }
 }
