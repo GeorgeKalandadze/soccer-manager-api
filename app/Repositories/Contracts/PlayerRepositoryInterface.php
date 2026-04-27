@@ -17,4 +17,6 @@ interface PlayerRepositoryInterface
     public function delete(Player $player): bool;
 
     public function bulkInsert(array $rows): void;
+
+    public function existsActiveTransferListing(Player $player): bool;
 }
