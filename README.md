@@ -1,58 +1,99 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Soccer Manager API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A RESTful API for managing soccer teams, players, and transfers. Built with Laravel following SOLID principles using a Repository-Service pattern. Authenticated with Sanctum and localized in English and Georgian.
 
-## About Laravel
+## Architecture
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+The project follows a layered architecture with clear separation of concerns:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Controllers** — thin, handle HTTP layer only, delegate to services
+- **Services** — business logic (team creation, transfer purchases, player listing)
+- **Repositories** — data access abstraction, all DB queries go through repository interfaces
+- **Form Requests** — input validation
+- **API Resources** — response formatting
+- **Model Scopes** — reusable query filters (e.g. market filtering by position, price, country)
+## Tech Stack
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Laravel** with API versioning (`/api/v1/...`)
+- **Sanctum** for token-based authentication
+- **Pest** for feature testing
+- **Laravel Pint** for code style (PSR-12)
+- **SQLite/PostgreSQL** with proper migrations and indexing
 
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Setup
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate --seed
+php artisan serve
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+## Authentication
 
-## Contributing
+All API requests (except register/login) require a Bearer token:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```
+Authorization: Bearer {token}
+```
 
-## Code of Conduct
+For localization, add the `X-App-Locale` header with `en` or `ka`.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## API Endpoints
 
-## Security Vulnerabilities
+### Auth
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+| Method | Endpoint        | Description |
+|--------|-----------------|-------------|
+| POST   | /api/register   | Register    |
+| POST   | /api/login      | Login       |
+| POST   | /api/logout     | Logout      |
 
-## License
+### Team
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+| Method | Endpoint      | Description  |
+|--------|---------------|--------------|
+| GET    | /api/v1/team  | Show team    |
+| PATCH  | /api/v1/team  | Update team  |
+
+### Players
+
+| Method | Endpoint                  | Description    |
+|--------|---------------------------|----------------|
+| GET    | /api/v1/players/{id}      | Show player    |
+| PATCH  | /api/v1/players/{id}      | Update player  |
+
+### Transfer Market
+
+| Method | Endpoint                                    | Description      |
+|--------|---------------------------------------------|------------------|
+| GET    | /api/v1/transfer-listings                   | Browse market    |
+| POST   | /api/v1/transfer-listings                   | List a player    |
+| DELETE | /api/v1/transfer-listings/{id}              | Cancel listing   |
+| POST   | /api/v1/transfer-listings/{id}/purchase     | Purchase player  |
+
+**Market filters:** `?position_id=&country_id=&team_id=&min_price=&max_price=`
+
+## Domain Rules
+
+- Each user gets one team on registration
+- Teams start with $5,000,000 budget and 20 players (3 GK, 6 DF, 6 MF, 5 AT)
+- Each player starts at $1,000,000 market value
+- Player ages range from 18 to 40
+- Owners can edit team name, team country, and player first name, last name, country
+- Players can be listed on the transfer market with an asking price
+- Purchases deduct from buyer budget, add to seller budget, and transfer ownership
+- After purchase, player market value increases by a random 10-100%
+
+## Testing
+
+```bash
+php artisan test
+```
+
+## Code Style
+
+```bash
+vendor/bin/pint
+```
