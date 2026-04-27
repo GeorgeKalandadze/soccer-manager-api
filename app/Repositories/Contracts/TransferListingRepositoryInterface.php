@@ -3,7 +3,7 @@
 namespace App\Repositories\Contracts;
 
 use App\Models\TransferListing;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface TransferListingRepositoryInterface
 {
@@ -11,9 +11,11 @@ interface TransferListingRepositoryInterface
 
     public function findOrFail(int $id): TransferListing;
 
+    public function findForUpdateOrFail(int $id): TransferListing;
+
     public function create(array $data): TransferListing;
 
     public function update(TransferListing $listing, array $data): TransferListing;
 
-    public function getActiveListings(): Builder;
+    public function paginateActive(array $filters = []): LengthAwarePaginator;
 }

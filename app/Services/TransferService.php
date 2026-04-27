@@ -11,6 +11,8 @@ use App\Repositories\Contracts\PlayerRepositoryInterface;
 use App\Repositories\Contracts\TeamRepositoryInterface;
 use App\Repositories\Contracts\TransferListingRepositoryInterface;
 use App\Repositories\Contracts\TransferRepositoryInterface;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -25,7 +27,7 @@ class TransferService
 
     public function listPlayer(Player $player, Team $sellerTeam, int $askingPrice): TransferListing
     {
-        if ($player->activeTransferListing()->exists()) {
+        if ($this->playerRepository->existsActiveTransferListing($player)) {
             throw ValidationException::withMessages([
                 'player_id' => [__('transfers.already_listed')],
             ]);
@@ -39,6 +41,22 @@ class TransferService
         ]);
     }
 
+    public function listPlayerById(int $playerId, Team $sellerTeam, int $askingPrice): TransferListing
+    {
+        $player = $this->playerRepository->findOrFail($playerId);
+
+        if ($player->team_id !== $sellerTeam->id) {
+            throw new AuthorizationException(__('transfers.not_your_player'));
+        }
+
+        return $this->listPlayer($player, $sellerTeam, $askingPrice);
+    }
+
+    public function getMarketListings(array $filters = []): LengthAwarePaginator
+    {
+        return $this->transferListingRepository->paginateActive($filters);
+    }
+
     public function cancelListing(TransferListing $listing): TransferListing
     {
         return $this->transferListingRepository->update($listing, [
@@ -49,9 +67,9 @@ class TransferService
     public function purchasePlayer(TransferListing $listing, Team $buyerTeam): Transfer
     {
         return DB::transaction(function () use ($listing, $buyerTeam) {
-            $listing = TransferListing::lockForUpdate()->findOrFail($listing->id);
-            $buyerTeam = Team::lockForUpdate()->findOrFail($buyerTeam->id);
-            $sellerTeam = Team::lockForUpdate()->findOrFail($listing->seller_team_id);
+            $listing = $this->transferListingRepository->findForUpdateOrFail($listing->id);
+            $buyerTeam = $this->teamRepository->findForUpdateOrFail($buyerTeam->id);
+            $sellerTeam = $this->teamRepository->findForUpdateOrFail($listing->seller_team_id);
 
             $this->validatePurchase($listing, $buyerTeam);
 

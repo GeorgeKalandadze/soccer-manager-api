@@ -6,9 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\StoreTransferListingRequest;
 use App\Http\Resources\TransferListingResource;
 use App\Http\Resources\TransferResource;
-use App\Models\Player;
 use App\Models\TransferListing;
-use App\Repositories\Contracts\TransferListingRepositoryInterface;
 use App\Services\TransferService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -19,33 +17,27 @@ class TransferListingController extends Controller
 {
     public function __construct(
         private readonly TransferService $transferService,
-        private readonly TransferListingRepositoryInterface $transferListingRepository,
     ) {}
 
     public function index(Request $request): AnonymousResourceCollection
     {
-        $query = $this->transferListingRepository->getActiveListings()
-            ->with(['player.position', 'player.country', 'sellerTeam.country'])
-            ->when($request->filled('position_id'), fn ($q) => $q->forPosition($request->integer('position_id')))
-            ->when($request->filled('country_id'), fn ($q) => $q->forCountry($request->integer('country_id')))
-            ->when($request->filled('team_id'), fn ($q) => $q->forTeam($request->integer('team_id')))
-            ->when($request->filled('min_price'), fn ($q) => $q->minPrice($request->integer('min_price')))
-            ->when($request->filled('max_price'), fn ($q) => $q->maxPrice($request->integer('max_price')));
-
-        return TransferListingResource::collection($query->latest()->paginate());
+        return TransferListingResource::collection(
+            $this->transferService->getMarketListings($request->only([
+                'position_id',
+                'country_id',
+                'team_id',
+                'min_price',
+                'max_price',
+            ]))
+        );
     }
 
     public function store(StoreTransferListingRequest $request): JsonResponse
     {
         $team = $request->user()->team;
-        $player = Player::findOrFail($request->validated('player_id'));
 
-        if ($player->team_id !== $team->id) {
-            throw new AccessDeniedHttpException(__('transfers.not_your_player'));
-        }
-
-        $listing = $this->transferService->listPlayer(
-            $player,
+        $listing = $this->transferService->listPlayerById(
+            $request->validated('player_id'),
             $team,
             $request->validated('asking_price'),
         );

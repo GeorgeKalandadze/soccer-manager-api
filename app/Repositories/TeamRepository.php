@@ -17,6 +17,11 @@ class TeamRepository implements TeamRepositoryInterface
         return Team::findOrFail($id);
     }
 
+    public function findForUpdateOrFail(int $id): Team
+    {
+        return Team::lockForUpdate()->findOrFail($id);
+    }
+
     public function create(array $data): Team
     {
         return Team::create($data);

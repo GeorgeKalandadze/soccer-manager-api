@@ -39,4 +39,9 @@ class PlayerRepository implements PlayerRepositoryInterface
     {
         DB::table('players')->insert($rows);
     }
+
+    public function existsActiveTransferListing(Player $player): bool
+    {
+        return $player->activeTransferListing()->exists();
+    }
 }
