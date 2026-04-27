@@ -44,6 +44,7 @@ class TransferListingRepository implements TransferListingRepositoryInterface
             ->when($this->hasFilter($filters, 'team_id'), fn ($query) => $query->forTeam((int) $filters['team_id']))
             ->when($this->hasFilter($filters, 'min_price'), fn ($query) => $query->minPrice((int) $filters['min_price']))
             ->when($this->hasFilter($filters, 'max_price'), fn ($query) => $query->maxPrice((int) $filters['max_price']))
+            ->when($this->hasFilter($filters, 'search'), fn ($query) => $query->search($filters['search']))
             ->latest()
             ->paginate();
     }
@@ -53,3 +54,4 @@ class TransferListingRepository implements TransferListingRepositoryInterface
         return isset($filters[$key]) && $filters[$key] !== '';
     }
 }
+

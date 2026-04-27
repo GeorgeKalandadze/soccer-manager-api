@@ -28,6 +28,7 @@ class TransferListingController extends Controller
                 'team_id',
                 'min_price',
                 'max_price',
+                'search',
             ]))
         );
     }

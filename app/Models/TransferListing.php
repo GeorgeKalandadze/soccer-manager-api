@@ -71,4 +71,14 @@ class TransferListing extends Model
     {
         return $query->where('asking_price', '<=', $price);
     }
+
+    public function scopeSearch(Builder $query, string $term): Builder
+    {
+        $like = '%'.mb_strtolower($term).'%';
+
+        return $query->whereHas('player', fn (Builder $q) => $q->whereRaw(
+            "LOWER(first_name->>'en') LIKE ? OR LOWER(first_name->>'ka') LIKE ? OR LOWER(last_name->>'en') LIKE ? OR LOWER(last_name->>'ka') LIKE ?",
+            [$like, $like, $like, $like]
+        ));
+    }
 }
