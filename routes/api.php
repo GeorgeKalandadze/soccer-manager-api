@@ -19,6 +19,7 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::prefix('players')->group(function () {
         Route::get('/{player}', [PlayerController::class, 'show'])->name('players.show');
         Route::patch('/{player}', [PlayerController::class, 'update'])->name('players.update');
+        Route::get('/{player}/transfers', [PlayerController::class, 'transfers'])->name('players.transfers');
     });
 
     Route::prefix('transfer-listings')->group(function () {
