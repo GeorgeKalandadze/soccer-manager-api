@@ -28,4 +28,3 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::post('/{listing}/purchase', [TransferListingController::class, 'purchase'])->name('transfer-listings.purchase');
     });
 });
-
