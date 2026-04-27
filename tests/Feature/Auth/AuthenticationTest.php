@@ -97,7 +97,7 @@ it('returns Georgian validation messages when requested', function () {
             'password_confirmation' => 'password',
         ])
         ->assertUnprocessable()
-        ->assertHeader('Content-Language', 'ka')
+        ->assertHeader('X-App-Locale', 'ka')
         ->assertJsonPath('errors.country_id.0', 'ქვეყანა სავალდებულოა.');
 });
 

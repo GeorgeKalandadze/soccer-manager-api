@@ -4,22 +4,23 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Symfony\Component\HttpFoundation\Response;
 
 class SetAppLocale
 {
-    /**
-     * @param  Closure(Request): Response  $next
-     */
     public function handle(Request $request, Closure $next): Response
     {
-        if ($locale = $request->header('X-App-Locale')) {
-            app()->setLocale($locale);
+        if (
+            $request->hasHeader('X-App-Locale') &&
+            in_array($request->header('X-App-Locale'), config('app.available_locales'))
+        ) {
+            App::setLocale($request->header('X-App-Locale'));
         }
 
         $response = $next($request);
 
-        $response->headers->set('Content-Language', app()->getLocale());
+        $response->headers->set('X-App-Locale', app()->getLocale());
 
         return $response;
     }

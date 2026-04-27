@@ -120,7 +120,7 @@ it('sets the application locale from the x app locale header for player requests
         ->withHeader('X-App-Locale', 'ka')
         ->getJson("/api/v1/players/{$player->id}")
         ->assertOk()
-        ->assertHeader('Content-Language', 'ka')
+        ->assertHeader('X-App-Locale', 'ka')
         ->assertJsonPath('data.first_name.ka', 'გიორგი')
         ->assertJsonPath('data.last_name.ka', 'კვარა')
         ->assertJsonPath('data.position.name.ka', 'მეკარე');

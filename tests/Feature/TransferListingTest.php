@@ -275,6 +275,24 @@ it('cannot purchase own player', function () {
         ->assertJsonValidationErrors('listing');
 });
 
+it('returns Georgian validation message when purchasing own player', function () {
+    Sanctum::actingAs($this->user);
+    $player = $this->team->players->first();
+
+    $this->postJson('/api/v1/transfer-listings', [
+        'player_id' => $player->id,
+        'asking_price' => 1_000_000,
+    ]);
+
+    $listing = TransferListing::where('player_id', $player->id)->first();
+
+    $this->withHeader('X-App-Locale', 'ka')
+        ->postJson("/api/v1/transfer-listings/{$listing->id}/purchase")
+        ->assertUnprocessable()
+        ->assertHeader('X-App-Locale', 'ka')
+        ->assertJsonPath('errors.listing.0', 'თქვენ არ შეგიძლიათ საკუთარი მოთამაშის შეძენა.');
+});
+
 it('cannot purchase with insufficient budget', function () {
     Sanctum::actingAs($this->otherUser);
     $player = $this->otherTeam->players->first();
