@@ -9,14 +9,17 @@ The project follows a layered architecture with clear separation of concerns:
 - **Controllers** — thin, handle HTTP layer only, delegate to services
 - **Services** — business logic (team creation, transfer purchases, player listing)
 - **Repositories** — data access abstraction, all DB queries go through repository interfaces
+- **Policies** — authorization logic for player and transfer listing ownership
 - **Form Requests** — input validation
 - **API Resources** — response formatting
-- **Model Scopes** — reusable query filters (e.g. market filtering by position, price, country)
+- **Model Scopes** — reusable query filters (e.g. market filtering by position, price, country, player name search)
+
 ## Tech Stack
 
 - **Laravel** with API versioning (`/api/v1/...`)
 - **Sanctum** for token-based authentication
-- **Pest** for feature testing
+- **Pest** for feature testing (58 tests, 704 assertions)
+- **Scramble** for auto-generated OpenAPI documentation
 - **Laravel Pint** for code style (PSR-12)
 - **Laravel Sail** for Docker-based development
 - **PostgreSQL** with proper migrations and indexing
@@ -41,8 +44,12 @@ composer install
 cp .env.example .env
 php artisan key:generate
 php artisan migrate --seed
-php artisan serve
+composer run dev
 ```
+
+## API Documentation
+
+Interactive API docs are available at `/docs/api` when the server is running. Generated automatically by Scramble from routes, Form Requests, and API Resources.
 
 ## Authentication
 
@@ -73,10 +80,11 @@ For localization, add the `X-App-Locale` header with `en` or `ka`.
 
 ### Players
 
-| Method | Endpoint                  | Description    |
-|--------|---------------------------|----------------|
-| GET    | /api/v1/players/{id}      | Show player    |
-| PATCH  | /api/v1/players/{id}      | Update player  |
+| Method | Endpoint                        | Description        |
+|--------|---------------------------------|--------------------|
+| GET    | /api/v1/players/{id}            | Show player        |
+| PATCH  | /api/v1/players/{id}            | Update player      |
+| GET    | /api/v1/players/{id}/transfers  | Transfer history   |
 
 ### Transfer Market
 
@@ -87,7 +95,7 @@ For localization, add the `X-App-Locale` header with `en` or `ka`.
 | DELETE | /api/v1/transfer-listings/{id}              | Cancel listing   |
 | POST   | /api/v1/transfer-listings/{id}/purchase     | Purchase player  |
 
-**Market filters:** `?position_id=&country_id=&team_id=&min_price=&max_price=`
+**Market filters:** `?position_id=&country_id=&team_id=&min_price=&max_price=&search=`
 
 ## Domain Rules
 
@@ -99,6 +107,12 @@ For localization, add the `X-App-Locale` header with `en` or `ka`.
 - Players can be listed on the transfer market with an asking price
 - Purchases deduct from buyer budget, add to seller budget, and transfer ownership
 - After purchase, player market value increases by a random 10-100%
+- Cannot purchase your own player or buy with insufficient budget
+- Duplicate active listings per player are prevented via partial unique index
+
+## Localization
+
+All validation messages and domain-specific messages are translated in English and Georgian. Set the `X-App-Locale` header to `ka` for Georgian responses.
 
 ## Testing
 
