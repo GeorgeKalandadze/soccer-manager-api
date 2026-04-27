@@ -103,3 +103,10 @@ it('sets the application locale from the x app locale header for team requests',
         ->assertJsonPath('data.name.ka', 'თბილისი იუნაიტედი')
         ->assertJsonPath('data.players.0.position.name.ka', 'მეკარე');
 });
+
+it('returns 401 when accessing team without authentication', function () {
+    $this->refreshApplication();
+
+    $this->getJson('/api/v1/team')
+        ->assertUnauthorized();
+});

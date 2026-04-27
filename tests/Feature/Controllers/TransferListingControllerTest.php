@@ -83,6 +83,24 @@ it('cannot list an already listed player', function () {
         ->assertJsonValidationErrors('player_id');
 });
 
+it('validates asking_price is required and positive', function () {
+    Sanctum::actingAs($this->user);
+    $player = $this->team->players->first();
+
+    $this->postJson('/api/v1/transfer-listings', [
+        'player_id' => $player->id,
+    ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('asking_price');
+
+    $this->postJson('/api/v1/transfer-listings', [
+        'player_id' => $player->id,
+        'asking_price' => 0,
+    ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('asking_price');
+});
+
 it('can view all active transfer listings', function () {
     Sanctum::actingAs($this->user);
     $player = $this->team->players->first();
@@ -370,4 +388,9 @@ it('does not show cancelled or completed listings in market', function () {
     $this->getJson('/api/v1/transfer-listings')
         ->assertOk()
         ->assertJsonCount(0, 'data');
+});
+
+it('returns 401 when accessing transfer listings without authentication', function () {
+    $this->getJson('/api/v1/transfer-listings')
+        ->assertUnauthorized();
 });

@@ -20,3 +20,24 @@ it('generates a full squad for a team', function () {
         ->and($team->players()->whereRelation('position', 'abbreviation', 'MF')->count())->toBe(6)
         ->and($team->players()->whereRelation('position', 'abbreviation', 'AT')->count())->toBe(5);
 });
+
+it('generates players with correct initial market value', function () {
+    $team = Team::factory()->create();
+
+    app(PlayerService::class)->generateForTeam($team);
+
+    $team->players->each(function ($player) {
+        expect($player->market_value)->toBe(1_000_000);
+    });
+});
+
+it('generates players with ages between 18 and 40', function () {
+    $team = Team::factory()->create();
+
+    app(PlayerService::class)->generateForTeam($team);
+
+    $team->players->each(function ($player) {
+        expect($player->age)->toBeGreaterThanOrEqual(18)
+            ->and($player->age)->toBeLessThanOrEqual(40);
+    });
+});
