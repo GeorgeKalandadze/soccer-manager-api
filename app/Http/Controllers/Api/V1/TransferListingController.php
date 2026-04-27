@@ -11,7 +11,7 @@ use App\Services\TransferService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Illuminate\Support\Facades\Gate;
 
 class TransferListingController extends Controller
 {
@@ -50,11 +50,9 @@ class TransferListingController extends Controller
             ->setStatusCode(201);
     }
 
-    public function destroy(Request $request, TransferListing $listing): TransferListingResource
+    public function destroy(TransferListing $listing): TransferListingResource
     {
-        if ($listing->seller_team_id !== $request->user()->team?->id) {
-            throw new AccessDeniedHttpException;
-        }
+        Gate::authorize('cancel', $listing);
 
         $this->transferService->cancelListing($listing);
 

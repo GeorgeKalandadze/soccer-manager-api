@@ -8,9 +8,8 @@ use App\Http\Resources\PlayerResource;
 use App\Http\Resources\TransferResource;
 use App\Models\Player;
 use App\Services\PlayerService;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Illuminate\Support\Facades\Gate;
 
 class PlayerController extends Controller
 {
@@ -18,22 +17,18 @@ class PlayerController extends Controller
         private readonly PlayerService $playerService,
     ) {}
 
-    public function show(Request $request, Player $player): PlayerResource
+    public function show(Player $player): PlayerResource
     {
-        if ($player->team_id !== $request->user()->team?->id) {
-            throw new AccessDeniedHttpException;
-        }
+        Gate::authorize('manage', $player);
 
         $player->load(['position', 'country']);
 
         return new PlayerResource($player);
     }
 
-    public function transfers(Request $request, Player $player): AnonymousResourceCollection
+    public function transfers(Player $player): AnonymousResourceCollection
     {
-        if ($player->team_id !== $request->user()->team?->id) {
-            throw new AccessDeniedHttpException;
-        }
+        Gate::authorize('manage', $player);
 
         $transfers = $player->transfers()
             ->with(['sellerTeam.country', 'buyerTeam.country'])
@@ -45,9 +40,7 @@ class PlayerController extends Controller
 
     public function update(UpdatePlayerRequest $request, Player $player): PlayerResource
     {
-        if ($player->team_id !== $request->user()->team?->id) {
-            throw new AccessDeniedHttpException;
-        }
+        Gate::authorize('manage', $player);
 
         $this->playerService->update($player, $request->validated());
 
