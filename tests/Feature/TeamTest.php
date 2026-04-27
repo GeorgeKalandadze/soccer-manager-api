@@ -99,7 +99,7 @@ it('sets the application locale from the x app locale header for team requests',
         ->withHeader('X-App-Locale', 'ka')
         ->getJson('/api/v1/team')
         ->assertOk()
-        ->assertHeader('Content-Language', 'ka')
+        ->assertHeader('X-App-Locale', 'ka')
         ->assertJsonPath('data.name.ka', 'თბილისი იუნაიტედი')
         ->assertJsonPath('data.players.0.position.name.ka', 'მეკარე');
 });
