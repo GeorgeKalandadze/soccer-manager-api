@@ -51,6 +51,18 @@ composer run dev
 
 Interactive API docs are available at `/docs/api` when the server is running. Generated automatically by Scramble from routes, Form Requests, and API Resources.
 
+## Postman Collection
+
+A Postman collection is included at `postman/soccer-manager-api.postman_collection.json`.
+
+Import it into Postman and set these collection variables:
+
+- `api_base_url`: local API URL, for example `http://127.0.0.1:8000`
+- `token`: Bearer token returned by Register or Login
+- `player_id`: player used by player detail, update, transfer history, and listing creation requests
+- `listing_id`: transfer listing used by cancel and purchase requests
+- `position_id`: market filter used by the List Market request
+
 ## Authentication
 
 All API requests (except register/login) require a Bearer token:
