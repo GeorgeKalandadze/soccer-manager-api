@@ -18,9 +18,23 @@ The project follows a layered architecture with clear separation of concerns:
 - **Sanctum** for token-based authentication
 - **Pest** for feature testing
 - **Laravel Pint** for code style (PSR-12)
-- **SQLite/PostgreSQL** with proper migrations and indexing
+- **Laravel Sail** for Docker-based development
+- **PostgreSQL** with proper migrations and indexing
 
 ## Setup
+
+### With Docker (Laravel Sail)
+
+```bash
+cp .env.example .env
+./vendor/bin/sail up -d
+./vendor/bin/sail artisan key:generate
+./vendor/bin/sail artisan migrate --seed
+```
+
+The API will be available at `http://localhost`.
+
+### Manual Setup
 
 ```bash
 composer install
@@ -90,6 +104,8 @@ For localization, add the `X-App-Locale` header with `en` or `ka`.
 
 ```bash
 php artisan test
+# or with Sail
+./vendor/bin/sail artisan test
 ```
 
 ## Code Style
